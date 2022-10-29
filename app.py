@@ -9,7 +9,7 @@ import keras
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.utils import to_categorical
-
+import pickle
 import streamlit as st
 
 
@@ -51,12 +51,10 @@ st.header('Specified Input parameters')
 st.write(dataframe)
 st.write('---')
 
-# Transformation
-train = pd.read_excel("Train (1).xlsx")
-test = pd.read_excel("Test (1).xlsx")
-valid = pd.read_excel("Valid (1).xlsx")
 
-df = pd.concat([train, test, valid])
+
+codes = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L',
+         'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
 
 def create_dict(codes):
       
@@ -78,26 +76,11 @@ def integer_encoding(data, char_dict):
   
   return encode_list
 
-codes = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L',
-         'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
+
 
 char_dict = create_dict(codes)
 
-list_of_sentence=[]
-for sent in df['Sequence']:
-    list_new=[]
-    for w in sent:
-        list_new.append(w)
-    list_of_sentence.append(list_new)
 
-Embedding_vector_length = 200
-mod = gensim.models.Word2Vec(list_of_sentence, vector_size= Embedding_vector_length, window =5, min_count=1,workers=1, sg = 1)
-print(f"Shape of word: {mod.wv.vectors.shape}")
-vocabulary_size = len(char_dict) + 1 
-embedding_matrix = np.zeros((vocabulary_size, Embedding_vector_length))
-
-for word, i in char_dict.items():
-    embedding_matrix[i] = mod.wv[word]
 
 
 def transform(features):
@@ -108,7 +91,7 @@ def transform(features):
 
 
 # Build Regression Model
-model = load_model('convlstm.h5')    
+model = pickle.load(open('model', 'rb'))
 
 # Apply Model to Make Prediction
 data = transform(dataframe)
